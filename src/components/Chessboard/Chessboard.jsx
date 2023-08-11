@@ -1,7 +1,7 @@
 import * as React from 'react';
 import './Chessboard.css';
 import { Chess } from 'chess.js'
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import Piece from '../Piece/Piece';
 import Button from '@mui/material/Button';
 import Popover from '@mui/material/Popover';
@@ -11,11 +11,14 @@ const Chessboard = () => {
 
     const [selected, setSelected] = useState(null);
     const [promotion, setPromotion] = useState(null);
-    const chess = useRef(new Chess()).current
-    const cellArray = useRef([]).current
+    const [chess] = useState(new Chess());
+    const cellArray = []
+    // const cellArray = useRef([]).current //使用useRef后程序无法正常工作； 改为上面的写法或者去掉Popover组件后正常，为什么？
+
 
     function handleClick(e, pos) {
-        e.preventDefault()
+        e.preventDefault();
+        console.log(selected)
         if (selected == null) {
             if (chess.get(pos)) {
                 setSelected(pos)
@@ -42,8 +45,8 @@ const Chessboard = () => {
             return;
         }
         chess.move({ from: promotion.from, to: promotion.to, promotion: target })
-        setSelected(() => false)
-        setPromotion(() => null)
+        setSelected(null)
+        setPromotion(null)
     }
 
     let board = chess.board()
@@ -65,61 +68,30 @@ const Chessboard = () => {
                         selected && chess.moves({ square: selected, verbose: true }).find(move => move.to === pos) &&
                         <div className='circle'></div>
                     }
-                    {
-                        selected && promotion && promotion.to === pos &&
-                        <Popover
-                            open={promotion != null}
-                            onClose={() => handlePromotion(null)}
-                            anchorEl={document.getElementById(pos)}
-                        >
-                            <div className='grid-container'>
-                                <Button className='grid-item' onClick={() => handlePromotion('q')}>queen</Button>
-                                <Button className='grid-item' onClick={() => handlePromotion('r')}>rook</Button>
-                                <Button className='grid-item' onClick={() => handlePromotion('b')}>bishop</Button>
-                                <Button className='grid-item' onClick={() => handlePromotion('n')}>knight</Button>
-                            </div>
-                        </Popover>
-                    }
                 </div>
             cellArray[i][j] = cell
         }
     }
 
-
-    //The good code
     return (
-        <div className="chessboard" key="chessboard">
-            {cellArray}
+        <div>
+            <div className="chessboard" key="chessboard">
+                {cellArray}
+                <Popover
+                    open={promotion != null}
+                    onClose={() => handlePromotion(null)}
+                    anchorEl={promotion && document.getElementById(promotion.to)}
+                >
+                    <div className='grid-container'>
+                        <Button className='grid-item' onClick={() => handlePromotion('q')}>queen</Button>
+                        <Button className='grid-item' onClick={() => handlePromotion('r')}>rook</Button>
+                        <Button className='grid-item' onClick={() => handlePromotion('b')}>bishop</Button>
+                        <Button className='grid-item' onClick={() => handlePromotion('n')}>knight</Button>
+                    </div>
+                </Popover>
+            </div>
         </div>
     );
-
-    //The bad code
-    //   return (
-    //     <div className="chessboard" key="chessboard">
-    //       {cellArray}
-    //       <Popover
-    //         key="popover"
-    //         open={promotion != null}
-    //         onClose={() => handlePromotion(null)}
-    //         anchorEl={null}
-    //       >
-    //         <div className="grid-container">
-    //           <Button className="grid-item" onClick={() => handlePromotion("q")}>
-    //             queen
-    //           </Button>
-    //           <Button className="grid-item" onClick={() => handlePromotion("r")}>
-    //             rook
-    //           </Button>
-    //           <Button className="grid-item" onClick={() => handlePromotion("b")}>
-    //             bishop
-    //           </Button>
-    //           <Button className="grid-item" onClick={() => handlePromotion("n")}>
-    //             knight
-    //           </Button>
-    //         </div>
-    //       </Popover>
-    //     </div>
-    //   );
 };
 
 export default Chessboard;
